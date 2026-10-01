@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'nexus-services'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets:
+          - 'api-gateway:8080'
+          - 'claim-intake-service:8081'
+          - 'claims-orchestrator-service:8082'
+          - 'ai-fraud-triage-service:8083'
+          - 'billing-payment-service:8084'

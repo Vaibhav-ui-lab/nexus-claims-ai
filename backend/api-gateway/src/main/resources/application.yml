@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  cloud:
+    gateway:
+      routes:
+        - id: claim-intake-service
+          uri: ${CLAIM_INTAKE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/claims/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                key-resolver: "#{@userKeyResolver}"
+
+        - id: ai-fraud-triage-service
+          uri: ${AI_FRAUD_TRIAGE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/fraud/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                key-resolver: "#{@userKeyResolver}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus

@@ -1,0 +1,36 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: ai-fraud-triage-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:mock-key}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.2
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      aiFraudService:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
